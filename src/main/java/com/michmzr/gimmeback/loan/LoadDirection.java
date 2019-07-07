@@ -12,5 +12,8 @@ enum LoadDirection {
     /**
      * Pożyczam
      */
-    LEND
+    LEND;
+
+
+
 }

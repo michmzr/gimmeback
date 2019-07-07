@@ -44,11 +44,19 @@ public class Loan extends Auditable<Loan> implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate happended;
 
-    /** Data oddania*/
+    /** Rzeczywista data oddania */
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate returned;
+
+    /** Ustalona data oddania*/
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate commisionDate;
 
     @JsonCreator
     public Loan() {
+    }
+
+    void resolve() {
+        returned =  LocalDate.now();
     }
 }

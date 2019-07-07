@@ -42,6 +42,19 @@ public class LoanController {
         return ResponseEntity.ok(loan.get());
     }
 
+    @GetMapping("/{id}/resolve")
+    public ResponseEntity<Boolean> resolve(@PathVariable Long id) {
+        if (!loanService.find(id).isPresent()) {
+            log.error("Id " + id + " is not existed");
+
+            ResponseEntity.badRequest().build(); //todo potrzebne return???
+        }
+
+        Boolean resolve = loanService.resolve(id);
+
+        return ResponseEntity.ok(resolve);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Loan> update(@PathVariable Long id, @Valid @RequestBody Loan product) {
         if (!loanService.find(id).isPresent()) {

@@ -3,6 +3,7 @@ services:
   app_db:
     container_name:  app_db
     image: mysql/mysql-server:5.7
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_c
     environment:
       MYSQL_DATABASE: gimme
       MYSQL_ROOT_PASSWORD: ppp12345!

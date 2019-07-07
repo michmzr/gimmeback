@@ -11,20 +11,38 @@ public class LoanService {
     @Autowired
     LoanRepository loanRepository;
 
-    public List<Loan> findAll() {
+    List<Loan> findAll() {
         return loanRepository.findAll();
     }
 
-    public Optional<Loan> find(Long id) {
+    Optional<Loan> find(Long id) {
         return loanRepository.findById(id);
     }
 
-    public Loan save(Loan item) {
+    Loan save(Loan item) {
         return loanRepository.save(item);
     }
 
-    public void delete(Long id) {
+    void delete(Long id) {
         loanRepository.deleteById(id);
     }
 
+    /**
+     * Aktualizuje status pożyczenia na zwrócony
+     *
+     * @param id Loan id
+     * @return true - operacja poszla pomyslnie, false- blad wykonania
+     */
+    Boolean resolve(Long id) {
+        Optional<Loan> loanOpt = find(id);
+
+        if (loanOpt.isPresent()) {
+            Loan loan = loanOpt.get();
+            loan.resolve();
+
+            return save(loan) != null;
+        } else {
+            return false;
+        }
+    }
 }
