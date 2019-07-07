@@ -1,5 +1,6 @@
 package com.michmzr.gimmeback.user;
 
+import com.michmzr.gimmeback.core.audit.Auditable;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -10,10 +11,11 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class User {
+public class User extends Auditable<User>  implements Serializable {
     @Id
     @GeneratedValue
     private long id;

@@ -1,5 +1,6 @@
 package com.michmzr.gimmeback.core.audit;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -15,6 +16,7 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = {"createdAt", "createdBy", "lastModifiedBy", "lastModifiedAt"}, allowGetters = true)
 public abstract class Auditable<U> {
 
     @CreatedBy
@@ -22,14 +24,14 @@ public abstract class Auditable<U> {
 
     @CreatedDate
     @Temporal(TIMESTAMP)
-    protected Date createdDate;
+    protected Date createdAt;
 
     @LastModifiedBy
     protected U lastModifiedBy;
 
     @LastModifiedDate
     @Temporal(TIMESTAMP)
-    protected Date lastModifiedDate;
+    protected Date lastModifiedAt;
 
     public U getCreatedBy() {
         return createdBy;
@@ -39,12 +41,12 @@ public abstract class Auditable<U> {
         this.createdBy = createdBy;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public U getLastModifiedBy() {
@@ -55,11 +57,11 @@ public abstract class Auditable<U> {
         this.lastModifiedBy = lastModifiedBy;
     }
 
-    public Date getLastModifiedDate() {
-        return lastModifiedDate;
+    public Date getLastModifiedAt() {
+        return lastModifiedAt;
     }
 
-    public void setLastModifiedDate(Date lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
+    public void setLastModifiedAt(Date lastModifiedAt) {
+        this.lastModifiedAt = lastModifiedAt;
     }
 }

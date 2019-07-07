@@ -28,7 +28,7 @@ public class ItemService {
         return   itemRepository.save(item);
     }
 
-    public Optional<Item> findById(Long id) {
+    public Optional<Item> find(Long id) {
         return itemRepository.findById(id);
     }
 
@@ -36,7 +36,7 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         itemRepository.deleteById(id);
     }
 }

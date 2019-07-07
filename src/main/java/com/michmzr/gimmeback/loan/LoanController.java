@@ -1,4 +1,4 @@
-package com.michmzr.gimmeback.item;
+package com.michmzr.gimmeback.loan;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,54 +13,54 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/item")
-public class ItemController {
+@RequestMapping("/api/v1/loan/")
+public class LoanController {
     @Autowired
-    ItemRepository itemRepository;
+    LoanRepository loanRepository;
 
     @Autowired
-    ItemService itemService;
+    LoanService loanService;
 
     @GetMapping
-    public ResponseEntity<List<Item>> findAll() {
-        return ResponseEntity.ok(itemService.findAll());
+    public ResponseEntity<List<Loan>> findAll() {
+        return ResponseEntity.ok(loanService.findAll());
     }
 
     @PostMapping("/create")
-    public ResponseEntity create(@Valid @RequestBody Item product) {
-        return ResponseEntity.ok(itemService.save(product));
+    public ResponseEntity create(@Valid @RequestBody Loan product) {
+        return ResponseEntity.ok(loanService.save(product));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Item> findById(@PathVariable Long id) {
-        Optional<Item> stock = itemService.find(id);
-        if (!stock.isPresent()) {
+    public ResponseEntity<Loan> findById(@PathVariable Long id) {
+        Optional<Loan> loan = loanService.find(id);
+        if (!loan.isPresent()) {
             log.error("Id " + id + " is not existed");
             ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(stock.get());
+        return ResponseEntity.ok(loan.get());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Item> update(@PathVariable Long id, @Valid @RequestBody Item product) {
-        if (!itemService.find(id).isPresent()) {
+    public ResponseEntity<Loan> update(@PathVariable Long id, @Valid @RequestBody Loan product) {
+        if (!loanService.find(id).isPresent()) {
             log.error("Id " + id + " is not existed");
             ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(itemService.save(product));
+        return ResponseEntity.ok(loanService.save(product));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
-        if (!itemService.find(id).isPresent()) {
+        if (!loanService.find(id).isPresent()) {
             log.error("Id " + id + " is not existed");
 
             ResponseEntity.badRequest().build();
         }
 
-        itemService.delete(id);
+        loanService.delete(id);
 
         return ResponseEntity.ok().build();
     }
