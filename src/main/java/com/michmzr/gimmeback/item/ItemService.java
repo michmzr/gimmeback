@@ -25,7 +25,7 @@ public class ItemService {
         item.setType(type);
         item.setValue(value);
 
-        return   itemRepository.save(item);
+        return itemRepository.save(item);
     }
 
     public Optional<Item> find(Long id) {

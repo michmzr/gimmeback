@@ -16,22 +16,25 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "createdBy", "lastModifiedBy", "lastModifiedAt"}, allowGetters = true)
+@JsonIgnoreProperties(
+        value = {"createdAt", "createdBy", "lastModifiedBy", "lastModifiedAt"},
+        allowGetters = true
+)
 public abstract class Auditable<U> {
 
     @CreatedBy
-    protected U createdBy;
+    private U createdBy;
 
     @CreatedDate
     @Temporal(TIMESTAMP)
-    protected Date createdAt;
+    private Date createdAt;
 
     @LastModifiedBy
-    protected U lastModifiedBy;
+    private U lastModifiedBy;
 
     @LastModifiedDate
     @Temporal(TIMESTAMP)
-    protected Date lastModifiedAt;
+    private Date lastModifiedAt;
 
     public U getCreatedBy() {
         return createdBy;

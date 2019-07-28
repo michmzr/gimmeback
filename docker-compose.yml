@@ -1,13 +1,15 @@
 version: '3'
 services:
-  app_db:
-    container_name:  app_db
-    image: mysql/mysql-server:5.7
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_c
+  mysql:
+    container_name: app_db
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=UTF8MB4
     environment:
       MYSQL_DATABASE: gimme
       MYSQL_ROOT_PASSWORD: ppp12345!
       MYSQL_ROOT_HOST: '%'
+    volumes:
+    - my-db:/var/lib/mysql
     ports:
     - "3306:3306"
     restart: always
@@ -15,7 +17,7 @@ services:
 #  app:
 #    build: .
 #    volumes:
-#    - .:/app
+#    - .:/apps
 #    - ~/.m2:/root/.m2
 #    working_dir: /app
 #    ports:
@@ -23,3 +25,6 @@ services:
 #    command: gradle clean spring-boot:run
 #    depends_on:
 #    -  app_db
+# Names our volume
+volumes:
+  my-db:
