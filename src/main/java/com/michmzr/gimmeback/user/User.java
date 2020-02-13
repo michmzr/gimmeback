@@ -1,6 +1,6 @@
 package com.michmzr.gimmeback.user;
 
-import com.michmzr.gimmeback.core.audit.Auditable;
+import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.role.Role;
 import lombok.Data;
 
@@ -62,6 +62,4 @@ public class User extends Auditable<User> implements Serializable {
         this.email = email;
         this.password = password;
     }
-
-
 }

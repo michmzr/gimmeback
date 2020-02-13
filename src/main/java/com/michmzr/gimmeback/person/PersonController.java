@@ -18,25 +18,24 @@ import java.util.Optional;
 public class PersonController {
     @Autowired
     PersonRepository personRepository;
-
     @Autowired
     PersonService personService;
 
     @GetMapping
-    ResponseEntity<List<Person>> list(){
+    ResponseEntity<List<Person>> list() {
         return ResponseEntity.ok(personService.findAll());
     }
 
     @PostMapping("/create")
-    ResponseEntity<Person> create(@Valid  @RequestBody Person person, BindingResult bindingResult) {
-        return  ResponseEntity.ok(personRepository.save(person));
+    ResponseEntity<Person> create(@Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
+        return ResponseEntity.ok(personService.save(personDTO));
     }
 
     @GetMapping("/{id}")
     ResponseEntity<Person> findById(@PathVariable Long id) {
         Optional<Person> stock = personService.find(id);
 
-        if(!stock.isPresent()) {
+        if (!stock.isPresent()) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -44,14 +43,17 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<Person> update(@PathVariable Long id, @Valid @RequestBody Person person, BindingResult bindingResult){
-        if(!personService.find(id).isPresent()) {
-            log.error("Nie znaleziono osoby " + id);
+    ResponseEntity<Person> update(@PathVariable Long id, @Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
+        Optional<Person> person = personService.find(id);
+        if (!person.isPresent()) {
+            log.error("Not found person " + id);
 
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(personRepository.save(person));
+        return ResponseEntity.ok(
+                personService.update(person.get(), personDTO)
+        );
     }
 
 

@@ -27,8 +27,8 @@ public class LoanController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity create(@Valid @RequestBody Loan product) {
-        return ResponseEntity.ok(loanService.save(product));
+    public ResponseEntity create(@Valid @RequestBody LoanDTO loanDTO) {
+        return ResponseEntity.ok(loanService.save(loanDTO));
     }
 
     @GetMapping("/{id}")
@@ -56,13 +56,17 @@ public class LoanController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Loan> update(@PathVariable Long id, @Valid @RequestBody Loan product) {
-        if (!loanService.find(id).isPresent()) {
+    public ResponseEntity<Loan> update(@PathVariable Long id, @Valid @RequestBody LoanDTO loanDTO) {
+        Optional<Loan> loanOptional = loanService.find(id);
+
+        if (!loanOptional.isPresent()) {
             log.error("Id " + id + " is not existed");
             ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(loanService.save(product));
+        return ResponseEntity.ok(
+                loanService.update(loanOptional.get(), loanDTO)
+        );
     }
 
     @DeleteMapping("/{id}")

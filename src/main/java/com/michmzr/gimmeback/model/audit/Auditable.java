@@ -1,4 +1,4 @@
-package com.michmzr.gimmeback.core.audit;
+package com.michmzr.gimmeback.model.audit;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedBy;

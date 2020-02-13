@@ -1,28 +1,26 @@
 package com.michmzr.gimmeback.loan;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.michmzr.gimmeback.item.Item;
-import com.michmzr.gimmeback.model.audit.Auditable;
+import com.michmzr.gimmeback.item.ItemDTO;
 import com.michmzr.gimmeback.person.Person;
-import com.michmzr.gimmeback.user.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Entity
-public class Loan extends Auditable<Loan> implements Serializable {
-    @Id
-    @Getter
-    @GeneratedValue
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoanDTO {
+    @Nullable
     private Long id;
 
     @Size(max = 50)
@@ -39,29 +37,23 @@ public class Loan extends Auditable<Loan> implements Serializable {
     private LoadDirection direction;
 
     @OneToMany
-    private Set<Item> items = new HashSet<>(0);
+    private Set<ItemDTO> items = new HashSet<>(0);
 
-    /** Data pożyczenia*/
+    /**
+     * Data pożyczenia
+     */
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate happended;
 
-    /** Rzeczywista data oddania */
+    /**
+     * Rzeczywista data oddania
+     */
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate returned;
 
-    /** Ustalona data oddania*/
+    /**
+     * Ustalona data oddania
+     */
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate commisionDate;
-
-    @NotNull
-    @ManyToOne
-    protected User author;
-
-    @JsonCreator
-    public Loan() {
-    }
-
-    void resolve() {
-        returned =  LocalDate.now();
-    }
 }

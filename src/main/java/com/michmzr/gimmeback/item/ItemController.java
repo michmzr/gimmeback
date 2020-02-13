@@ -1,6 +1,5 @@
 package com.michmzr.gimmeback.item;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +11,16 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/item")
 public class ItemController {
-    @Autowired
-    ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
+    private final ItemService itemService;
 
     @Autowired
-    ItemService itemService;
+    public ItemController(ItemRepository itemRepository, ItemService itemService) {
+        this.itemRepository = itemRepository;
+        this.itemService = itemService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Item>> findAll() {
@@ -27,8 +28,8 @@ public class ItemController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity create(@Valid @RequestBody Item product) {
-        return ResponseEntity.ok(itemService.save(product));
+    public ResponseEntity create(@Valid @RequestBody ItemDTO item) {
+        return ResponseEntity.ok(itemService.save(item));
     }
 
     @GetMapping("/{id}")
@@ -43,13 +44,18 @@ public class ItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Item> update(@PathVariable Long id, @Valid @RequestBody Item product) {
-        if (!itemService.find(id).isPresent()) {
+    public ResponseEntity<Item> update(@PathVariable Long id, @Valid @RequestBody ItemDTO itemDTO) { //todo test
+        Optional<Item> itemOptional = itemService.find(id);
+        if (!itemOptional.isPresent()) {
             log.error("Id " + id + " is not existed");
             ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(itemService.save(product));
+        return ResponseEntity.ok(
+                itemService.update(
+                        itemOptional.get(),
+                        itemDTO)
+        );
     }
 
     @DeleteMapping("/{id}")

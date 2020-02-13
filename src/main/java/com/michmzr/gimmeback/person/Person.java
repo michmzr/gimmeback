@@ -1,15 +1,18 @@
 package com.michmzr.gimmeback.person;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.michmzr.gimmeback.core.audit.Auditable;
+import com.michmzr.gimmeback.model.audit.Auditable;
+import com.michmzr.gimmeback.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -18,7 +21,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @AllArgsConstructor
-public class Person extends Auditable<String>  implements Serializable {
+public class Person extends Auditable<String> implements Serializable {
     @Id
     @GeneratedValue
     private long id;
@@ -37,4 +40,8 @@ public class Person extends Auditable<String>  implements Serializable {
     @JsonCreator
     public Person() {
     }
+
+    @NotNull
+    @ManyToOne
+    protected User author;
 }
