@@ -3,38 +3,45 @@ package com.michmzr.gimmeback.loan;
 import com.michmzr.gimmeback.item.Item;
 import com.michmzr.gimmeback.item.ItemMapper;
 import com.michmzr.gimmeback.security.SpringSecurityService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.michmzr.gimmeback.user.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class LoanService {
     private final LoanRepository loanRepository;
     private final SpringSecurityService springSecurityService;
     private final LoanMapper loanMapper;
-    @Autowired
-    ItemMapper itemMapper;
+    private final ItemMapper itemMapper;
 
-    @Autowired
-    public LoanService(LoanRepository loanRepository, SpringSecurityService springSecurityService, LoanMapper loanMapper) {
+    public LoanService(LoanRepository loanRepository, SpringSecurityService springSecurityService,
+                       LoanMapper loanMapper, ItemMapper itemMapper) {
         this.loanRepository = loanRepository;
         this.springSecurityService = springSecurityService;
         this.loanMapper = loanMapper;
-    }
-
-    List<Loan> findAll() {
-        return loanRepository.findAll();
+        this.itemMapper = itemMapper;
     }
 
     Optional<Loan> find(Long id) {
-        return loanRepository.findByIdAndAuthor(
-                id,
-                springSecurityService.getCurrentUser()
-        );
+        return findByIdAndAuthor(id, springSecurityService.getCurrentUser());
+    }
+
+    private Optional<Loan> findByIdAndAuthor(Long id, User user) {
+        return loanRepository.findByIdAndAuthor(id, user);
+    }
+
+    List<LoanDTO> findAll() {
+        return loanRepository.findAll()
+                .stream()
+                .map(loanMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     Loan save(LoanDTO loanDTO) {
@@ -49,45 +56,61 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
-    Loan update(Loan loan, LoanDTO loanDTO) {//todo testy
-        loan.setName(loanDTO.getName());
-        loan.setDescription(loanDTO.getDescription());
-        loan.setPerson(loanDTO.getPerson());
-        loan.setDirection(loanDTO.getDirection());
+    Boolean update(Long id, LoanDTO loanDTO) {//todo testy
+        log.info("Update loan dto loan: {}", loanDTO);
 
-        Set<Item> items = loanDTO.getItems().stream().map(itemMapper::fromDTO).collect(Collectors.toSet());
-        loan.setItems(items);
+        Optional<Loan> loanOpt = findByIdAndAuthor(id, springSecurityService.getCurrentUser());
 
-        loan.setHappended(loanDTO.getHappended());
-        loan.setReturned(loanDTO.getReturned());
-        loan.setCommisionDate(loanDTO.getCommisionDate());
+        if (loanOpt.isPresent()) {
+            Loan loan = loanOpt.get();
 
-        return loanRepository.save(loan);
+            log.info("Updating loan: {} with loan dto: {}", loan, loanDTO);
+
+            loan.setName(loanDTO.getName());
+            loan.setDescription(loanDTO.getDescription());
+            loan.setPerson(loanDTO.getPerson());
+            loan.setDirection(loanDTO.getDirection());
+
+            Set<Item> items = loanDTO.getItems().stream().map(itemMapper::fromDTO).collect(Collectors.toSet());
+            loan.setItems(items);
+
+            loan.setHappended(loanDTO.getHappended());
+            loan.setReturned(loanDTO.getReturned());
+            loan.setCommisionDate(loanDTO.getCommisionDate());
+
+            return loanRepository.save(loan) != null;
+        } else {
+            log.debug("Not found loan for id: {} and author:{}", id, springSecurityService.getCurrentUser());
+            return false;
+        }
     }
 
-    void delete(Long id) {
+    void delete(long id) throws InvalidParameterException {
+        log.info("Deleting loan id: " + id);
+
+        Optional<Loan> loanOpt = findByIdAndAuthor(id, springSecurityService.getCurrentUser());
+
+        if (loanOpt.isPresent()) {
+            delete(loanOpt.get());
+        } else {
+            throw new InvalidParameterException("Loan with id " + id + " not found");
+        }
+    }
+
+    private void delete(Loan loan) {
+        log.info("Deleting {}", loan);
+
         loanRepository.deleteByIdAndAuthor(
-                id,
+                loan.getId(),
                 springSecurityService.getCurrentUser()
         );
     }
 
-    /**
-     * Aktualizuje status pożyczenia na zwrócony
-     *
-     * @param id Loan id
-     * @return true - operacja poszla pomyslnie, false- blad wykonania
-     */
-    Boolean resolve(Long id) {
-        Optional<Loan> loanOpt = find(id);
+    Boolean resolve(Loan loan) {
+        log.info("Resolving loan {}", loan);
 
-        if (loanOpt.isPresent()) {
-            Loan loan = loanOpt.get();
-            loan.resolve();
+        loan.resolve();
 
-            return loanRepository.save(loan) != null;
-        } else {
-            return false;
-        }
+        return loanRepository.save(loan) != null;
     }
 }
