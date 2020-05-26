@@ -3,6 +3,7 @@ package com.michmzr.gimmeback.loan;
 import com.michmzr.gimmeback.item.Item;
 import com.michmzr.gimmeback.item.ItemMapper;
 import com.michmzr.gimmeback.security.SpringSecurityService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,19 +12,21 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class LoanService {
     private final LoanRepository loanRepository;
     private final SpringSecurityService springSecurityService;
     private final LoanMapper loanMapper;
-    @Autowired
-    ItemMapper itemMapper;
+    private final ItemMapper itemMapper;
 
     @Autowired
-    public LoanService(LoanRepository loanRepository, SpringSecurityService springSecurityService, LoanMapper loanMapper) {
+    public LoanService(LoanRepository loanRepository, LoanMapper loanMapper, ItemMapper itemMapper,
+                       SpringSecurityService springSecurityService) {
         this.loanRepository = loanRepository;
         this.springSecurityService = springSecurityService;
         this.loanMapper = loanMapper;
+        this.itemMapper = itemMapper;
     }
 
     List<Loan> findAll() {
@@ -31,31 +34,27 @@ public class LoanService {
     }
 
     Optional<Loan> find(Long id) {
-        return loanRepository.findByIdAndAuthor(
-                id,
-                springSecurityService.getCurrentUser()
-        );
+        return loanRepository.findByIdAndAuthor(id, springSecurityService.getCurrentUser());
     }
 
     Loan save(LoanDTO loanDTO) {
+        log.info("Saving loan dto: {}", loanDTO);
+
         Loan loan = loanMapper.fromDTO(loanDTO);
-
-        //todo itemDTO:
-
-        loan.setAuthor(
-                springSecurityService.getCurrentUser()
-        );
+        loan.setAuthor(springSecurityService.getCurrentUser());
 
         return loanRepository.save(loan);
     }
 
-    Loan update(Loan loan, LoanDTO loanDTO) {//todo testy
+    Loan update(Loan loan, LoanDTO loanDTO) {
         loan.setName(loanDTO.getName());
         loan.setDescription(loanDTO.getDescription());
         loan.setPerson(loanDTO.getPerson());
         loan.setDirection(loanDTO.getDirection());
 
-        Set<Item> items = loanDTO.getItems().stream().map(itemMapper::fromDTO).collect(Collectors.toSet());
+        Set<Item> items = loanDTO.getItems()
+                .stream()
+                .map(itemMapper::fromDTO).collect(Collectors.toSet());
         loan.setItems(items);
 
         loan.setHappended(loanDTO.getHappended());
@@ -65,11 +64,12 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
+    void delete(Loan loan) {
+        delete(loan.getId());
+    }
+
     void delete(Long id) {
-        loanRepository.deleteByIdAndAuthor(
-                id,
-                springSecurityService.getCurrentUser()
-        );
+        loanRepository.deleteByIdAndAuthor(id, springSecurityService.getCurrentUser());
     }
 
     /**
@@ -78,16 +78,8 @@ public class LoanService {
      * @param id Loan id
      * @return true - operacja poszla pomyslnie, false- blad wykonania
      */
-    Boolean resolve(Long id) {
-        Optional<Loan> loanOpt = find(id);
-
-        if (loanOpt.isPresent()) {
-            Loan loan = loanOpt.get();
-            loan.resolve();
-
-            return loanRepository.save(loan) != null;
-        } else {
-            return false;
-        }
+    Boolean resolve(Loan loan) {
+        loan.resolve();
+        return loanRepository.save(loan) != null;
     }
 }

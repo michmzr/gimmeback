@@ -1,6 +1,8 @@
 package com.michmzr.gimmeback.model.audit;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -14,6 +16,8 @@ import java.util.Date;
 
 import static javax.persistence.TemporalType.TIMESTAMP;
 
+@Getter
+@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(
@@ -21,7 +25,6 @@ import static javax.persistence.TemporalType.TIMESTAMP;
         allowGetters = true
 )
 public abstract class Auditable<U> {
-
     @CreatedBy
     private U createdBy;
 
@@ -35,36 +38,4 @@ public abstract class Auditable<U> {
     @LastModifiedDate
     @Temporal(TIMESTAMP)
     private Date lastModifiedAt;
-
-    public U getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(U createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public U getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(U lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public Date getLastModifiedAt() {
-        return lastModifiedAt;
-    }
-
-    public void setLastModifiedAt(Date lastModifiedAt) {
-        this.lastModifiedAt = lastModifiedAt;
-    }
 }

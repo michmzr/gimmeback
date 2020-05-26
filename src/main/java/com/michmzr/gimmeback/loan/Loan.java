@@ -6,10 +6,14 @@ import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.person.Person;
 import com.michmzr.gimmeback.user.User;
 import lombok.Data;
-import lombok.Getter;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -18,10 +22,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@ToString
 @Entity
 public class Loan extends Auditable<Loan> implements Serializable {
     @Id
-    @Getter
     @GeneratedValue
     private Long id;
 
