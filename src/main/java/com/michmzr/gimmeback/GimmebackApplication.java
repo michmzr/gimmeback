@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @SpringBootApplication
-@EnableJpaAuditing(auditorAwareRef = "auditorAware")
+@EnableJpaAuditing(/*auditorAwareRef = "auditorAware"*/)
 public class GimmeBackApplication {
     public static void main(String[] args) {
         SpringApplication.run(GimmeBackApplication.class, args);

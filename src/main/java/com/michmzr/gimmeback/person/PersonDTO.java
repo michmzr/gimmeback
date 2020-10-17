@@ -22,5 +22,4 @@ public class PersonDTO {
 
     @Nullable
     private String phone;
-
 }

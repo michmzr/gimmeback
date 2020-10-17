@@ -5,6 +5,7 @@ import com.michmzr.gimmeback.item.ItemMapper;
 import com.michmzr.gimmeback.security.SpringSecurityService;
 import com.michmzr.gimmeback.user.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
@@ -45,13 +46,10 @@ public class LoanService {
     }
 
     Loan save(LoanDTO loanDTO) {
+        log.info("Saving loan dto: {}", loanDTO);
+
         Loan loan = loanMapper.fromDTO(loanDTO);
-
-        //todo itemDTO:
-
-        loan.setAuthor(
-                springSecurityService.getCurrentUser()
-        );
+        loan.setAuthor(springSecurityService.getCurrentUser());
 
         return loanRepository.save(loan);
     }

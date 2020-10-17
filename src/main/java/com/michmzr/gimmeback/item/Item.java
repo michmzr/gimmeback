@@ -4,22 +4,26 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.user.User;
 import lombok.Data;
-import lombok.Getter;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Data
 @Entity
+@Data
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 public class Item extends Auditable<String> implements Serializable {
     @Id
-    @Getter
     @GeneratedValue
     private Long id;
 
@@ -28,8 +32,6 @@ public class Item extends Auditable<String> implements Serializable {
 
     @Nullable
     private BigDecimal value;
-
-    //todo currency
 
     @NotNull
     private ItemType type;

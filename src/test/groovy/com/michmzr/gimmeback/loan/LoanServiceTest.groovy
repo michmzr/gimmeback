@@ -72,5 +72,5 @@ class LoanServiceTest extends Specification {
             // TODO implement assertions
     }
 
-    * /
+    */
 }

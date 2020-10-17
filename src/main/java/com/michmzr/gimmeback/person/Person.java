@@ -18,8 +18,8 @@ import java.io.Serializable;
 /**
  * Osoba
  */
-@Data
 @Entity
+@Data
 @AllArgsConstructor
 public class Person extends Auditable<String> implements Serializable {
     @Id
@@ -37,11 +37,11 @@ public class Person extends Auditable<String> implements Serializable {
 
     private String phone;
 
-    @JsonCreator
-    public Person() {
-    }
-
     @NotNull
     @ManyToOne
     protected User author;
+
+    @JsonCreator
+    public Person() {
+    }
 }
