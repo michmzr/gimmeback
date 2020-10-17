@@ -13,6 +13,10 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 @SpringBootApplication
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class GimmeBackApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(GimmeBackApplication.class, args);
+    }
+
     @Bean
     @Primary
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
@@ -23,9 +27,5 @@ public class GimmeBackApplication {
         mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
 
         return mapper;
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(GimmeBackApplication.class, args);
     }
 }

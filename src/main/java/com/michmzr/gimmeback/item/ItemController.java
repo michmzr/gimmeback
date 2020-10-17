@@ -16,6 +16,8 @@ public class ItemController {
     private final ItemRepository itemRepository;
     private final ItemService itemService;
 
+    //todo ItemApiService
+
     @Autowired
     public ItemController(ItemRepository itemRepository, ItemService itemService) {
         this.itemRepository = itemRepository;

@@ -27,6 +27,7 @@ class LoanServiceTest extends Specification {
     def setup() {
     }
 
+    /*
     def "test find"() {
         given:
 
