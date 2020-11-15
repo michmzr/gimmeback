@@ -1,10 +1,10 @@
 package com.michmzr.gimmeback.person;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,6 +21,7 @@ import java.io.Serializable;
 @Entity
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Person extends Auditable<String> implements Serializable {
     @Id
     @GeneratedValue
@@ -41,7 +42,7 @@ public class Person extends Auditable<String> implements Serializable {
     @ManyToOne
     protected User author;
 
-    @JsonCreator
     public Person() {
     }
 }
+

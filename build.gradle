@@ -1,3 +1,5 @@
+import org.codehaus.groovy.runtime.GStringImpl
+
 //noinspection GroovyAssignabilityCheck
 
 buildscript {
@@ -50,35 +52,34 @@ configurations {
 }
 
 ext {
-    mapstructVersion = "$mapStructVersion"
+    mapstructVersion = "$mapStructVersion" as GStringImpl
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.5.RELEASE'
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.6.RELEASE'
+    compile "org.springframework.boot:spring-boot-starter-web:$springVersion"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "$springVersion"
 
     // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     //Data
+    compile group: 'org.springframework.data', name: 'spring-data-commons', version: "$springVersion"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:"$springVersion"
     compile group: 'org.springframework', name: 'spring-jdbc', version: '5.1.8.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: "$springVersion"
     compile 'mysql:mysql-connector-java'
 
     //3rd
     compile "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.9'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.3'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.3'
 
     //Maintanance
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     //Security
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.6.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: "$springVersion"
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
     //Mapping
@@ -112,9 +113,8 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
 
     //Testing
-    testCompile("org.springframework.security:spring-security-test")
-
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile "org.springframework.boot:spring-boot-starter-test:$springVersion"
+    testCompile "org.springframework.security:spring-security-test"
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
     testRuntime "cglib:cglib-nodep:$cgLibVersion"
