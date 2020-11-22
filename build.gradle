@@ -14,11 +14,14 @@ buildscript {
 
 plugins {
     id 'groovy'
+    id 'eclipse'
+    id 'idea'
     id 'net.ltgt.apt' version '0.20'
     id 'net.ltgt.apt-idea' version '0.21'
 }
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
@@ -59,7 +62,6 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-web:$springVersion"
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "$springVersion"
 
-    // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     //Data
@@ -88,17 +90,14 @@ dependencies {
 
     // mandatory dependencies for using Spock
     compile "org.codehaus.groovy:$groovyVersion"
-    //testCompile platform("org.spockframework:spock-bom:$spockVersion")
+    testCompile platform("org.spockframework:spock-bom:$spockVersion")
     testCompile "org.spockframework:spock-core"
 
     // optional dependencies for using Spock
     testCompile "org.hamcrest:hamcrest-core:1.3" // only necessary if Hamcrest matchers are used
     testRuntime "net.bytebuddy:byte-buddy:1.9.3"          // allows mocking of classes (in addition to interfaces)
     testRuntime "org.objenesis:objenesis:2.6"    // allows mocking of classes without default constructor (together with CGLIB)
-
     testCompile "com.blogspot.toomuchcoding:spock-subjects-collaborators-extension:$SpockSubjectsCollabolatorsVersion"
-
-    // https://mvnrepository.com/artifact/cglib/cglib-nodep
     testCompile group: 'cglib', name: 'cglib-nodep', version: '3.3.0'
 
     //Mapping
@@ -118,8 +117,9 @@ dependencies {
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
     testRuntime "cglib:cglib-nodep:$cgLibVersion"
+    testImplementation('org.junit.jupiter:junit-jupiter:5.5.2')
 }
 
 test {
-    useJUnitPlatform()
+    useJUnit()
 }
