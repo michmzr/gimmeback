@@ -1,29 +1,34 @@
 package com.michmzr.gimmeback.person;
 
 import com.michmzr.gimmeback.security.SpringSecurityService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-public class PersonService {
+public class PersonApiService {
     private final PersonRepository personRepository;
     private final SpringSecurityService springSecurityService;
     private final PersonMapper personMapper;
 
     @Autowired
-    public PersonService(PersonRepository personRepository, SpringSecurityService springSecurityService, PersonMapper personMapper) {
+    public PersonApiService(PersonRepository personRepository, SpringSecurityService springSecurityService, PersonMapper personMapper) {
         this.personRepository = personRepository;
         this.springSecurityService = springSecurityService;
         this.personMapper = personMapper;
     }
 
-    public List<Person> findAll() {
-        return personRepository.findAllByAuthor(
+    public List<PersonDTO> findAll() {
+        List<Person> allByAuthor = personRepository.findAllByAuthor(
                 springSecurityService.getCurrentUser()
         );
+
+        return allByAuthor.stream().map(personMapper::toDTO).collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Person> find(Long id) {
@@ -33,13 +38,18 @@ public class PersonService {
         );
     }
 
-    public Person save(PersonDTO personDTO) {
+    public PersonDTO save(PersonDTO personDTO) {
+        log.info("Creating new Person {}", personDTO);
+
         Person person = personMapper.fromDTO(personDTO);
         person.setAuthor(
                 springSecurityService.getCurrentUser()
         );
 
-        return personRepository.save(person);
+        person = personRepository.save(person);
+        log.info("Created person: {}", person);
+
+        return personMapper.toDTO(person);
     }
 
     public Person update(Person person, PersonDTO personDTO) {
