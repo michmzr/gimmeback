@@ -1,5 +1,3 @@
-import org.codehaus.groovy.runtime.GStringImpl
-
 //noinspection GroovyAssignabilityCheck
 
 buildscript {
@@ -7,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.4.RELEASE")
+//        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.4.RELEASE")
         classpath "net.ltgt.gradle:gradle-apt-plugin:0.21"
     }
 }
@@ -18,6 +16,9 @@ plugins {
     id 'idea'
     id 'net.ltgt.apt' version '0.20'
     id 'net.ltgt.apt-idea' version '0.21'
+    id 'org.springframework.boot' version '2.4.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
 }
 
 apply plugin: 'java'
@@ -29,97 +30,80 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'net.ltgt.apt-idea'
 apply plugin: 'net.ltgt.apt-eclipse'
 
-bootJar {
-    baseName = 'gimmeback'
-    version = '0.1.0'
-}
+group = 'com.michmzr'
+version = '0.0.1'
+targetCompatibility = 15
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+compileJava {
+    sourceCompatibility = 15
+    targetCompatibility = 15
+}
 
 //Libraries version
-def lombokVersion = "1.18.8"
+def lombokVersion = "1.18.20"
 def spockVersion = "1.1-groovy-2.4"
 def cgLibVersion = "3.2.4"
 def mapStructVersion = "1.3.0.Final"
 
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
-}
-
 ext {
-    mapstructVersion = "$mapStructVersion" as GStringImpl
+    mapstructVersion = "$mapStructVersion" as org.codehaus.groovy.runtime.GStringImpl
 }
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "$springVersion"
-
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     //Data
-    compile group: 'org.springframework.data', name: 'spring-data-commons', version: "$springVersion"
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:"$springVersion"
-    compile group: 'org.springframework', name: 'spring-jdbc', version: '5.1.8.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: "$springVersion"
-    compile 'mysql:mysql-connector-java'
+    implementation group: 'org.springframework.data', name: 'spring-data-commons'
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+
+    runtimeOnly 'mysql:mysql-connector-java'
 
     //3rd
-    compile "org.projectlombok:lombok:$lombokVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.3'
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.3'
-
-    //Maintanance
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.12.3'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.3'
 
     //Security
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: "$springVersion"
-    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
     //Mapping
     implementation "org.mapstruct:mapstruct:$mapStructVersion"
     annotationProcessor "org.mapstruct:mapstruct-processor:$mapStructVersion"
-
-    // mandatory dependencies for using Spock
-    compile "org.codehaus.groovy:$groovyVersion"
-    testCompile platform("org.spockframework:spock-bom:$spockVersion")
-    testCompile "org.spockframework:spock-core"
-
-    // optional dependencies for using Spock
-    testCompile "org.hamcrest:hamcrest-core:1.3" // only necessary if Hamcrest matchers are used
-    testRuntime "net.bytebuddy:byte-buddy:1.9.3"          // allows mocking of classes (in addition to interfaces)
-    testRuntime "org.objenesis:objenesis:2.6"    // allows mocking of classes without default constructor (together with CGLIB)
-    testCompile "com.blogspot.toomuchcoding:spock-subjects-collaborators-extension:$SpockSubjectsCollabolatorsVersion"
-    testCompile group: 'cglib', name: 'cglib-nodep', version: '3.3.0'
-
-    //Mapping
-    implementation "org.mapstruct:mapstruct:$mapStructVersion"
-    annotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
 
     // If you are using mapstruct in test code
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
 
-    // Groovy
-    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+    //TESTING
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.21'
+    implementation group: 'org.spockframework', name: 'spock-bom', version: "$spockVersion", ext: 'pom'
+    testImplementation "org.spockframework:spock-core:$spockVersion"
+    testImplementation "org.spockframework:spock-spring:$spockVersion"
 
-    //Testing
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springVersion"
-    testCompile "org.springframework.security:spring-security-test"
-    testCompile "org.spockframework:spock-core:$spockVersion"
-    testCompile "org.spockframework:spock-spring:$spockVersion"
-    testRuntime "cglib:cglib-nodep:$cgLibVersion"
+    testImplementation  "org.hamcrest:hamcrest-core:1.3" // only necessary if Hamcrest matchers are used
+    implementation group: 'net.bytebuddy', name: 'byte-buddy-dep', version: '1.11.0'
+    testImplementation group: 'org.objenesis', name: 'objenesis', version: '2.6'
+    implementation group: 'com.blogspot.toomuchcoding', name: 'spock-subjects-collaborators-extension', version: '1.2.2'
+    implementation group: 'cglib', name: 'cglib-nodep', version: '3.3.0'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation('org.junit.jupiter:junit-jupiter:5.5.2')
 }
 
 test {
-    useJUnit()
+    useJUnitPlatform()
 }

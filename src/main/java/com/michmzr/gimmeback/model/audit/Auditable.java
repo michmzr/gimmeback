@@ -11,10 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Temporal;
-import java.util.Date;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -29,13 +26,11 @@ public abstract class Auditable<U> {
     private U createdBy;
 
     @CreatedDate
-    @Temporal(TIMESTAMP)
-    private Date createdAt;
+    private Timestamp createdAt;
 
     @LastModifiedBy
     private U lastModifiedBy;
 
     @LastModifiedDate
-    @Temporal(TIMESTAMP)
-    private Date lastModifiedAt;
+    private Timestamp lastModifiedAt;
 }
