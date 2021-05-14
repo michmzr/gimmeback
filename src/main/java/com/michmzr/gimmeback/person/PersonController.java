@@ -23,20 +23,21 @@ public class PersonController {
     }
 
     @GetMapping
-    ResponseEntity<List<PersonDTO>> list() {
+    public ResponseEntity<List<PersonDTO>> list() {
         return ResponseEntity.ok(personApiService.findAll());
     }
 
     @PostMapping("/create")
-    ResponseEntity<Person> create(@Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
+    public ResponseEntity create(@Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
         log.info("Creating person: {}", personDTO);
+
         personApiService.save(personDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<Person> findById(@PathVariable Long id) {
+    public ResponseEntity<Person> findById(@PathVariable Long id) {
         log.info("Returning person by id: {}", id);
 
         Optional<Person> stock = personApiService.find(id);
@@ -46,7 +47,7 @@ public class PersonController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<PersonDTO> update(@PathVariable Long id, @Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
+    public ResponseEntity<PersonDTO> update(@PathVariable Long id, @Valid @RequestBody PersonDTO personDTO, BindingResult bindingResult) {
         Optional<Person> person = personApiService.find(id);
         if (person.isEmpty()) {
             log.error("Not found person {}", id);
