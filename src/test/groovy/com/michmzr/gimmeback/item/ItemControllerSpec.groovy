@@ -2,6 +2,7 @@ package com.michmzr.gimmeback.item
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.michmzr.gimmeback.StubSecurityConfig
+import com.michmzr.gimmeback.rest.ErrorResponseAssert
 import groovy.json.JsonParserType
 import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ContextConfiguration
@@ -88,74 +88,30 @@ class ItemControllerSpec extends Specification {
             getContentAsString() == "what you expect"
             getHeader(HttpHeaders.LOCATION).contains("/item/1")
         }
-        //todo validation
     }
 
     @WithMockUser(value = "basic")
     def "when create and request body contains validation errors, expect 400 (Bad Request)..."() {
         given:
-        ItemDTO itemDTO = new ItemDTO(value: 3)
+
+        ItemDTO itemDTO = new ItemDTO(value: null)
         String body = objectMapper.writeValueAsString(itemDTO)
 
         when:
-        def response = mvc.perform(
+        def request = mvc.perform(
                 post('/api/v1/item/').contentType(MediaType.APPLICATION_JSON).content(body)
         )
-                .andReturn().getResponse()
+
         then:
-        response
-        /*    .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath('$.message',
-                    AllOf.allOf(
-                            StringContains.containsString("name: must not be null"),
-                            StringContains.containsString("type: must not be null")
-                    )));*/
-    }
-
-
-    @WithMockUser(value = "basic")
-    def "when create and request body query testcontains validation errors, expect 400 (Bad Request)..."() {
-        given:
-        ItemDTO itemDTO = new ItemDTO(value: 3)
-        String body = objectMapper.writeValueAsString(itemDTO)
-
-        when:
-        def response = mvc.perform(
-                post('/api/v1/item/query')
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-        ).andDo(mvcResult -> {
-            String json = mvcResult.getResponse().getContentAsString();
-        }).andReturn().getResponse()
+        request.andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andReturn()
         then:
-        response
-
-        /*    .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath('$.message',
-                    AllOf.allOf(
-                            StringContains.containsString("name: must not be null"),
-                            StringContains.containsString("type: must not be null")
-                    )));*/
+        ErrorResponseAssert errorResponseAssert = new ErrorResponseAssert(request.andReturn().getResponse().getContentAsString())
+        errorResponseAssert.hasFieldWithErrorMsg('name', 'not be null')
+        errorResponseAssert.hasFieldWithErrorMsg('name', 'empty')
+        errorResponseAssert.hasFieldWithErrorMsg('type', 'must not be null')
     }
-
-
-    @WithMockUser(value = "basic")
-    def "query - remove"() { //todo remove it
-        given:
-        "ss"
-        when:
-        def response =
-                mvc.perform(
-                        get('/api/v1/item/query').contentType(MediaType.APPLICATION_JSON)
-                ).andReturn().response
-        then:
-        HttpStatus.valueOf(response.status) == HttpStatus.OK
-    }
-
-
-    //todo create - validation
 
     @TestConfiguration
     static class StubConfig {

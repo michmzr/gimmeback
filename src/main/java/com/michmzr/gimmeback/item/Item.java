@@ -14,29 +14,22 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @ToString
+@EqualsAndHashCode(callSuper = true)
 @EntityListeners(AuditingEntityListener.class)
 public class Item extends Auditable<String> implements Serializable {
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id @GeneratedValue private Long id;
 
-    @NotEmpty
-    private String name;
+  @NotEmpty private String name;
 
-    private BigDecimal value;
+  private BigDecimal value;
 
-    @NotNull
-    private ItemType type;
+  @NotNull private ItemType type;
 
-    @NotNull
-    @ManyToOne
-    protected User author;
+  @NotNull @ManyToOne protected User author;
 
-    @JsonCreator
-    public Item() {
-    }
+  @JsonCreator
+  public Item() {}
 }
