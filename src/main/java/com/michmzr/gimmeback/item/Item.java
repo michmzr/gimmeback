@@ -1,37 +1,35 @@
 package com.michmzr.gimmeback.item;
 
-import com.michmzr.gimmeback.core.audit.Auditable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.michmzr.gimmeback.model.audit.Auditable;
+import com.michmzr.gimmeback.user.User;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.lang.Nullable;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Data
 @Entity
+@Data
+@ToString
+@EqualsAndHashCode(callSuper = true)
 @EntityListeners(AuditingEntityListener.class)
-public class Item extends Auditable<String>  implements Serializable {
-    @Id
-    @Getter
-    @GeneratedValue
-    private Long id;
+public class Item extends Auditable<String> implements Serializable {
+  @Id @GeneratedValue private Long id;
 
-    @NotEmpty
-    private String name;
+  @NotEmpty private String name;
 
-    @Nullable
-    private BigDecimal value;
+  private BigDecimal value;
 
-    //todo currency
+  @NotNull private ItemType type;
 
-    @NotNull
-    private ItemType type;
+  @NotNull @ManyToOne protected User author;
+
+  @JsonCreator
+  public Item() {}
 }

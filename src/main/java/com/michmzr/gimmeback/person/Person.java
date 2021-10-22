@@ -1,24 +1,28 @@
 package com.michmzr.gimmeback.person;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.michmzr.gimmeback.core.audit.Auditable;
+import com.michmzr.gimmeback.model.audit.Auditable;
+import com.michmzr.gimmeback.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
  * Osoba
  */
-@Data
 @Entity
+@Data
 @AllArgsConstructor
-public class Person extends Auditable<String>  implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class Person extends Auditable<String> implements Serializable {
     @Id
     @GeneratedValue
     private long id;
@@ -34,7 +38,11 @@ public class Person extends Auditable<String>  implements Serializable {
 
     private String phone;
 
-    @JsonCreator
+    @NotNull
+    @ManyToOne
+    protected User author;
+
     public Person() {
     }
 }
+

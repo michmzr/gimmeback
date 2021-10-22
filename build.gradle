@@ -1,71 +1,112 @@
+//noinspection GroovyAssignabilityCheck
+
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.4.RELEASE")
+//        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.4.RELEASE")
+        classpath "net.ltgt.gradle:gradle-apt-plugin:0.21"
     }
 }
 
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'eclipse'
+    id 'idea'
+    id 'net.ltgt.apt' version '0.20'
+    id 'net.ltgt.apt-idea' version '0.21'
+    id 'org.springframework.boot' version '2.4.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'net.ltgt.apt-idea'
+apply plugin: 'net.ltgt.apt-eclipse'
 
-bootJar {
-    baseName = 'gimmeback'
-    version =  '0.1.0'
-}
+group = 'com.michmzr'
+version = '0.0.1'
+targetCompatibility = 13
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+compileJava {
+    sourceCompatibility = 13
+    targetCompatibility = 13
+}
 
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
+//Libraries version
+def lombokVersion = "1.18.20"
+def mapStructVersion = "1.3.0.Final"
+
+ext {
+    mapstructVersion = "$mapStructVersion" as org.codehaus.groovy.runtime.GStringImpl
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.5.RELEASE'
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     //Data
-    compile group: 'org.springframework', name: 'spring-jdbc', version: '5.1.8.RELEASE'
-    compile 'mysql:mysql-connector-java'
+    implementation group: 'org.springframework.data', name: 'spring-data-commons'
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation group: 'javax.validation', name: 'validation-api'
+
+    runtimeOnly 'mysql:mysql-connector-java'
 
     //3rd
-    compile "org.projectlombok:lombok:$lombokVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.9'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.13.0'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.0'
 
-    //Maintanance
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    //Docs
+    implementation 'org.springdoc:springdoc-openapi-ui:1.5.11'
+
 
     //Security
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.6.RELEASE'
-    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
-    //Testing
-    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    //Mapping
+    implementation "org.mapstruct:mapstruct:$mapStructVersion"
+    annotationProcessor "org.mapstruct:mapstruct-processor:$mapStructVersion"
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
 
-    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junitVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    //TESTING
 
+    implementation 'org.codehaus.groovy:groovy:3.0.8'
+    testImplementation('org.spockframework:spock-core:2.0-M3-groovy-3.0')
+    testImplementation('org.spockframework:spock-spring:2.0-M3-groovy-3.0')
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+
+    testImplementation group: 'org.springframework.security', name: 'spring-security-test'
+
+    testImplementation  "org.hamcrest:hamcrest-core:1.3"
+    implementation group: 'net.bytebuddy', name: 'byte-buddy-dep', version: '1.11.0'
+    testImplementation group: 'org.objenesis', name: 'objenesis', version: '2.6'
+    implementation group: 'com.blogspot.toomuchcoding', name: 'spock-subjects-collaborators-extension', version: '1.2.2'
+    implementation group: 'cglib', name: 'cglib-nodep', version: '3.3.0'
+
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
-test {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }

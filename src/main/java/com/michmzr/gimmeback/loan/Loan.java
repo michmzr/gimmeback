@@ -1,11 +1,13 @@
 package com.michmzr.gimmeback.loan;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.michmzr.gimmeback.core.audit.Auditable;
 import com.michmzr.gimmeback.item.Item;
+import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.person.Person;
+import com.michmzr.gimmeback.user.User;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -17,10 +19,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@ToString
 @Entity
+@EqualsAndHashCode(callSuper = true)
 public class Loan extends Auditable<Loan> implements Serializable {
     @Id
-    @Getter
     @GeneratedValue
     private Long id;
 
@@ -51,6 +54,10 @@ public class Loan extends Auditable<Loan> implements Serializable {
     /** Ustalona data oddania*/
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate commisionDate;
+
+    @NotNull
+    @ManyToOne
+    protected User author;
 
     @JsonCreator
     public Loan() {

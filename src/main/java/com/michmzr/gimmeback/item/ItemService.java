@@ -1,42 +1,53 @@
 package com.michmzr.gimmeback.item;
 
+import com.michmzr.gimmeback.security.SpringSecurityService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class ItemService {
-    @Autowired
-    ItemRepository itemRepository;
+    private final SpringSecurityService springSecurityService;
+    private final ItemRepository itemRepository;
+    private final ItemMapper itemMapper;
 
-    public List<Item> findAll() {
-        return itemRepository.findAll();
+    @Autowired
+    public ItemService(SpringSecurityService springSecurityService, ItemRepository itemRepository, ItemMapper itemMapper) {
+        this.springSecurityService = springSecurityService;
+        this.itemRepository = itemRepository;
+        this.itemMapper = itemMapper;
     }
 
-    Item create(@NotEmpty String name, @NotNull ItemType type, BigDecimal value) {
-        Item item = new Item();
+    public List<Item> findAllByAuthor() {
+        return itemRepository.findAllByAuthor(springSecurityService.getCurrentUser());
+    }
 
-        item.setName(name);
-        item.setType(type);
-        item.setValue(value);
+    public Optional<Item> find(Long id) {
+        return itemRepository.findByIdAndAuthor(id, springSecurityService.getCurrentUser());
+    }
+
+    public Item save(ItemDTO itemDTO) {
+        Item item = itemMapper.fromDTO(itemDTO);
+        item.setAuthor(springSecurityService.getCurrentUser());
 
         return itemRepository.save(item);
     }
 
-    public Optional<Item> find(Long id) {
-        return itemRepository.findById(id);
-    }
+    public Item update(Item item, ItemDTO itemDTO) {
+        log.debug("Updating item:{} with {}", item, itemDTO);
 
-    public Item save(Item item) {
+        item.setName(itemDTO.getName());
+        item.setValue(itemDTO.getValue());
+        item.setType(itemDTO.getType());
+
         return itemRepository.save(item);
     }
 
     public void delete(Long id) {
-        itemRepository.deleteById(id);
+        itemRepository.deleteByIdAndAuthor(id, springSecurityService.getCurrentUser());
     }
 }

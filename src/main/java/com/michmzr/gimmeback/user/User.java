@@ -1,8 +1,10 @@
 package com.michmzr.gimmeback.user;
 
-import com.michmzr.gimmeback.core.audit.Auditable;
+import com.michmzr.gimmeback.model.audit.Auditable;
 import com.michmzr.gimmeback.role.Role;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -13,16 +15,11 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@ToString
 @Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {
-                "username"
-        }),
-        @UniqueConstraint(columnNames = {
-                "email"
-        })
-})
+@Data
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username"}), @UniqueConstraint(columnNames = {"email"})})
+@EqualsAndHashCode(callSuper = true)
 public class User extends Auditable<User> implements Serializable {
     @Id
     @GeneratedValue
@@ -50,7 +47,7 @@ public class User extends Auditable<User> implements Serializable {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<Role>();
+    private Set<Role> roles = new HashSet<>();
 
     public User() {
 
@@ -62,6 +59,4 @@ public class User extends Auditable<User> implements Serializable {
         this.email = email;
         this.password = password;
     }
-
-
 }
