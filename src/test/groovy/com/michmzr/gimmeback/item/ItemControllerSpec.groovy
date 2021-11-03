@@ -19,8 +19,7 @@ import spock.mock.DetachedMockFactory
 
 import static org.hamcrest.Matchers.hasSize
 import static org.hamcrest.Matchers.is
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @WebMvcTest(controllers = [ItemController])
@@ -63,7 +62,6 @@ class ItemControllerSpec extends Specification {
 
     }
 
-
     @WithMockUser(value = "basic")
     def "when create and item created, expect 201 (Created)"() {
         given:
@@ -91,11 +89,61 @@ class ItemControllerSpec extends Specification {
     }
 
     @WithMockUser(value = "basic")
+    def "when Item exists expect to get Item DTO"() {
+        given:
+        def item = new Item(id: 1, name: 'Item name', value: 5.8, type: ItemType.BOOK)
+        itemService.find(item.getId()) >> Optional.of(item)
+
+        expect:
+        mvc.perform(
+                get("/api/v1/item/${item.getId()}").contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+                .andExpect(content().json(
+                        toJsonString(getItemDtoJson(item))
+                ))
+    }
+
+    @WithMockUser(value = "basic")
+    def "when Item not exists expect to get NO_CONTENT"() {
+        expect:
+        mvc.perform(
+                get("/api/v1/item/4324234234").contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNoContent())
+                .andReturn()
+    }
+
+    @WithMockUser(value = "basic")
+    def "when deleting and Item exists expect item deleted"() {
+        given:
+        def item = new Item(id: 1, name: 'Item name', value: 5.8, type: ItemType.BOOK)
+        itemService.find(item.getId()) >> Optional.of(item)
+        expect:
+        mvc.perform(
+                delete("/api/v1/item/${item.getId()}")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+    }
+
+    @WithMockUser(value = "basic")
+    def "when deleting and  Item not exists expect NO_CONTENT"() {
+        expect:
+        mvc.perform(
+                delete("/api/v1/item/4534")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNoContent())
+                .andReturn()
+    }
+
+    private LinkedHashMap<String, Serializable> getItemDtoJson(Item item) {
+        [id: item.getId(), name: item.getName(), value: item.getValue(), type: item.getType().name()]
+    }
+
+    @WithMockUser(value = "basic")
     def "when create and request body contains validation errors, expect 400 (Bad Request)..."() {
         given:
 
         ItemDTO itemDTO = new ItemDTO(value: null)
-        String body = objectMapper.writeValueAsString(itemDTO)
+        String body = toJsonString(itemDTO)
 
         when:
         def request = mvc.perform(
@@ -111,6 +159,39 @@ class ItemControllerSpec extends Specification {
         errorResponseAssert.hasFieldWithErrorMsg('name', 'not be null')
         errorResponseAssert.hasFieldWithErrorMsg('name', 'empty')
         errorResponseAssert.hasFieldWithErrorMsg('type', 'must not be null')
+    }
+
+    @WithMockUser(value = "basic")
+    def "when Item exists expect to update Item and get 200"() {
+        given:
+        def item = new Item(id: 1, name: 'Item name', value: 5.8, type: ItemType.BOOK)
+        itemService.find(item.getId()) >> Optional.of(item)
+
+        def updateItem = new ItemDTO(name: 'New name', value: 1, type: ItemType.DEVICE)
+
+        expect:
+        mvc.perform(
+                put("/api/v1/item/${item.getId()}").contentType(MediaType.APPLICATION_JSON)
+                        .content(toJsonString(updateItem))
+        ).andExpect(status().isOk())
+    }
+
+    @WithMockUser(value = "basic")
+    def "when Item not exists on update expect to get NO_CONTENT"() {
+        given:
+        def updateItem = new ItemDTO(name: 'New name', value: 1, type: ItemType.DEVICE)
+
+        expect:
+        mvc.perform(
+                put("/api/v1/item/1231321")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJsonString(updateItem))
+        ).andExpect(status().isNoContent())
+                .andReturn()
+    }
+
+    private String toJsonString(def item) {
+        objectMapper.writeValueAsString(item)
     }
 
     @TestConfiguration

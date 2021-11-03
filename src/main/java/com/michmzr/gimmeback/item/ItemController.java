@@ -1,5 +1,6 @@
 package com.michmzr.gimmeback.item;
 
+import com.michmzr.gimmeback.utills.BaseController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/item")
-public class ItemController {
+public class ItemController extends BaseController {
   private final ItemService itemService;
   private final ItemMapper itemMapper;
 
@@ -64,37 +65,18 @@ public class ItemController {
       return ResponseEntity.ok(itemService.update(itemOptional.get(), itemDTO));
 
     } else {
-      onItemNotFound(id);
-      return ResponseEntity.badRequest().build();
+      return onItemNotFound(id);
     }
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity delete(@PathVariable Long id) {
     if (!itemService.find(id).isPresent()) {
-      onItemNotFound(id);
+      return onItemNotFound(id);
     }
 
     itemService.delete(id);
 
     return ResponseEntity.ok().build();
   }
-
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void onItemNotFound(long id) {
-    log.error("Not found item " + id);
-  }
-
-  /*    @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public Map<String, String> handleValidationExceptions(
-          MethodArgumentNotValidException ex) {
-      Map<String, String> errors = new HashMap<>();
-      ex.getBindingResult().getAllErrors().forEach((error) -> {
-          String fieldName = ((FieldError) error).getField();
-          String errorMessage = error.getDefaultMessage();
-          errors.put(fieldName, errorMessage);
-      });
-      return errors;
-  }*/
 }
