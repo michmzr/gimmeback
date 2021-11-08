@@ -1,70 +1,88 @@
 package com.michmzr.gimmeback.person;
 
 import com.michmzr.gimmeback.security.SpringSecurityService;
+import com.michmzr.gimmeback.user.User;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Service
 public class PersonApiService {
-    private final PersonRepository personRepository;
-    private final SpringSecurityService springSecurityService;
-    private final PersonMapper personMapper;
 
-    @Autowired
-    public PersonApiService(PersonRepository personRepository, SpringSecurityService springSecurityService, PersonMapper personMapper) {
-        this.personRepository = personRepository;
-        this.springSecurityService = springSecurityService;
-        this.personMapper = personMapper;
-    }
+  private final PersonRepository personRepository;
+  private final SpringSecurityService springSecurityService;
+  private final PersonMapper personMapper;
 
-    public List<PersonDTO> findAll() {
-        List<Person> allByAuthor = personRepository.findAllByAuthor(
-                springSecurityService.getCurrentUser()
-        );
+  @Autowired
+  PersonApiService(PersonRepository personRepository,
+      SpringSecurityService springSecurityService, PersonMapper personMapper) {
+    this.personRepository = personRepository;
+    this.springSecurityService = springSecurityService;
+    this.personMapper = personMapper;
+  }
 
-        return allByAuthor.stream().map(personMapper::toDTO).collect(Collectors.toUnmodifiableList());
-    }
+  List<PersonDTO> findAllByAuthor() {
+    log.info("Find all by author: {}", getCurrentUser());
+    List<Person> allByAuthor = personRepository.findAllByAuthor(
+        getCurrentUser()
+    );
 
-    public Optional<Person> find(Long id) {
-        return personRepository.findByIdAndAuthor(
-                id,
-                springSecurityService.getCurrentUser()
-        );
-    }
+    log.debug("Returning {}...", allByAuthor);
 
-    public PersonDTO save(PersonDTO personDTO) {
-        log.info("Creating new Person {}", personDTO);
+    return allByAuthor
+        .stream()
+        .map(personMapper::toDTO)
+        .collect(Collectors.toUnmodifiableList());
+  }
 
-        Person person = personMapper.fromDTO(personDTO);
-        person.setAuthor(
-                springSecurityService.getCurrentUser()
-        );
+  private User getCurrentUser() {
+    return springSecurityService.getCurrentUser();
+  }
 
-        person = personRepository.save(person);
-        log.info("Created person: {}", person);
+  Optional<PersonDTO> findAndDto(Long id) {
+    Optional<Person> personOption = find(id);
 
-        return personMapper.toDTO(person);
-    }
+    return personOption.map(personMapper::toDTO);
+  }
 
-    public Person update(Person person, PersonDTO personDTO) {
-        person.setName(personDTO.getName());
-        person.setSurname(personDTO.getSurname());
-        person.setEmail(personDTO.getEmail());
-        person.setPhone(personDTO.getPhone());
+  Optional<Person> find(Long id) {
+    return personRepository.findByIdAndAuthor(
+        id,
+        getCurrentUser()
+    );
+  }
 
-        return personRepository.save(person);
-    }
+  PersonDTO save(PersonDTO personDTO) {
+    log.info("Creating new Person {}", personDTO);
 
-    public void delete(Long id) {
-        personRepository.deleteByIdAndAuthor(
-                id,
-                springSecurityService.getCurrentUser()
-        );
-    }
+    Person person = personMapper.fromDTO(personDTO);
+    person.setAuthor(getCurrentUser());
+
+    person = personRepository.save(person);
+
+    log.info("Created person: {}", person);
+    return personMapper.toDTO(person);
+  }
+
+  PersonDTO update(Person person, PersonDTO personDTO) {
+    person.setName(personDTO.getName());
+    person.setSurname(personDTO.getSurname());
+    person.setEmail(personDTO.getEmail());
+    person.setPhone(personDTO.getPhone());
+
+    log.info("Updating person:{} with dto: {}", person, personDTO);
+
+    return personMapper.toDTO(personRepository.save(person));
+  }
+
+  public void delete(Long id) {
+    personRepository.deleteByIdAndAuthor(
+        id,
+        getCurrentUser()
+    );
+  }
 }

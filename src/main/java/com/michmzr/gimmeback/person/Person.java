@@ -25,7 +25,7 @@ import java.io.Serializable;
 public class Person extends Auditable<String> implements Serializable {
     @Id
     @GeneratedValue
-    private long id;
+    private Long id;
 
     @NotEmpty
     private String name;

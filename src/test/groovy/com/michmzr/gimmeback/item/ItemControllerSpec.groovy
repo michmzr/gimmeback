@@ -1,6 +1,7 @@
 package com.michmzr.gimmeback.item
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.michmzr.gimmeback.RestBaseControllerSpec
 import com.michmzr.gimmeback.StubSecurityConfig
 import com.michmzr.gimmeback.rest.ErrorResponseAssert
 import groovy.json.JsonParserType
@@ -10,26 +11,32 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import spock.lang.Specification
 import spock.mock.DetachedMockFactory
 
 import static org.hamcrest.Matchers.hasSize
 import static org.hamcrest.Matchers.is
+import static org.springframework.http.MediaType.APPLICATION_JSON
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @WebMvcTest(controllers = [ItemController])
 @ContextConfiguration(classes = [StubSecurityConfig, StubConfig])
-class ItemControllerSpec extends Specification {
-    @Autowired
-    MockMvc mvc
+class ItemControllerSpec extends RestBaseControllerSpec {
+    private static final String URL_ITEM_ENDPOINT = "/api/v1/item/"
 
     @Autowired
-    ItemService itemService
+    private MockMvc mvc
+
+    @Autowired
+    private ItemApiService itemService
+
+    @Autowired
+    private  ItemMapper itemMapper
 
     @Autowired
     private ObjectMapper objectMapper
@@ -48,7 +55,7 @@ class ItemControllerSpec extends Specification {
 
         expect:
         mvc.perform(
-                get('/api/v1/item/').contentType(MediaType.APPLICATION_JSON)
+                get(URL_ITEM_ENDPOINT).contentType(APPLICATION_JSON)
         ).andExpect(status().isOk())
                 .andExpect(jsonPath('$', hasSize(2)))
                 .andExpect(jsonPath('$[0].id', is(1)))
@@ -68,24 +75,13 @@ class ItemControllerSpec extends Specification {
         ItemDTO itemDTO = new ItemDTO(name: "Book", type: ItemType.BOOK)
         String body = objectMapper.writeValueAsString(itemDTO)
 
-        itemService.save(itemDTO) >> new Item(id: 1)
-
-        when:
-        def response =
-                mvc.perform(
-                        post('/api/v1/item/')
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
-                )
-        then:
-        response
-                .andExpect(status().isCreated())
-                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/api/v1/item/1"))
-        and:
-        response.andReturn().getResponse().with {
-            getContentAsString() == "what you expect"
-            getHeader(HttpHeaders.LOCATION).contains("/item/1")
+        itemService.save(itemDTO) >> {
+            itemDTO.id = 1
+            itemDTO
         }
+
+        expect:
+        assertRestCreate(mvc, URL_ITEM_ENDPOINT, body, "http://localhost${URL_ITEM_ENDPOINT}1")
     }
 
     @WithMockUser(value = "basic")
@@ -95,21 +91,13 @@ class ItemControllerSpec extends Specification {
         itemService.find(item.getId()) >> Optional.of(item)
 
         expect:
-        mvc.perform(
-                get("/api/v1/item/${item.getId()}").contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk())
-                .andExpect(content().json(
-                        toJsonString(getItemDtoJson(item))
-                ))
+        assertRestGet(mvc, URL_ITEM_ENDPOINT + item.getId(),  toJsonString(toDto(item)))
     }
 
     @WithMockUser(value = "basic")
     def "when Item not exists expect to get NO_CONTENT"() {
         expect:
-        mvc.perform(
-                get("/api/v1/item/4324234234").contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNoContent())
-                .andReturn()
+        assertRestHasCode(mvc, URL_ITEM_ENDPOINT + "4324234234", HttpStatus.NO_CONTENT)
     }
 
     @WithMockUser(value = "basic")
@@ -118,24 +106,13 @@ class ItemControllerSpec extends Specification {
         def item = new Item(id: 1, name: 'Item name', value: 5.8, type: ItemType.BOOK)
         itemService.find(item.getId()) >> Optional.of(item)
         expect:
-        mvc.perform(
-                delete("/api/v1/item/${item.getId()}")
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk())
+        assertRestDeleted(mvc, URL_ITEM_ENDPOINT + item.getId())
     }
 
     @WithMockUser(value = "basic")
-    def "when deleting and  Item not exists expect NO_CONTENT"() {
+    def "when deleting and Item not exists expect NO_CONTENT"() {
         expect:
-        mvc.perform(
-                delete("/api/v1/item/4534")
-                        .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNoContent())
-                .andReturn()
-    }
-
-    private LinkedHashMap<String, Serializable> getItemDtoJson(Item item) {
-        [id: item.getId(), name: item.getName(), value: item.getValue(), type: item.getType().name()]
+        assertRestDeletedNotContent(mvc,  "/api/v1/item/4534")
     }
 
     @WithMockUser(value = "basic")
@@ -147,7 +124,7 @@ class ItemControllerSpec extends Specification {
 
         when:
         def request = mvc.perform(
-                post('/api/v1/item/').contentType(MediaType.APPLICATION_JSON).content(body)
+                post(URL_ITEM_ENDPOINT).contentType(APPLICATION_JSON).content(body)
         )
 
         then:
@@ -170,24 +147,21 @@ class ItemControllerSpec extends Specification {
         def updateItem = new ItemDTO(name: 'New name', value: 1, type: ItemType.DEVICE)
 
         expect:
-        mvc.perform(
-                put("/api/v1/item/${item.getId()}").contentType(MediaType.APPLICATION_JSON)
-                        .content(toJsonString(updateItem))
-        ).andExpect(status().isOk())
+        assertRestUpdate(mvc, URL_ITEM_ENDPOINT + item.getId(),toJsonString(updateItem) )
     }
 
     @WithMockUser(value = "basic")
     def "when Item not exists on update expect to get NO_CONTENT"() {
         given:
         def updateItem = new ItemDTO(name: 'New name', value: 1, type: ItemType.DEVICE)
-
         expect:
-        mvc.perform(
-                put("/api/v1/item/1231321")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJsonString(updateItem))
-        ).andExpect(status().isNoContent())
-                .andReturn()
+        assertRestUpdateNotFound(mvc, URL_ITEM_ENDPOINT + "43",toJsonString(updateItem))
+    }
+
+    //todo update with validation error
+
+    private ItemDTO toDto(Item item) {
+        itemMapper.toDTO(item)
     }
 
     private String toJsonString(def item) {
@@ -199,8 +173,8 @@ class ItemControllerSpec extends Specification {
         DetachedMockFactory detachedMockFactory = new DetachedMockFactory()
 
         @Bean
-        ItemService itemService() {
-            detachedMockFactory.Stub(ItemService)
+        ItemApiService itemService() {
+            detachedMockFactory.Stub(ItemApiService)
         }
 
         @Bean
