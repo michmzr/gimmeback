@@ -1,4 +1,7 @@
 #Workflow name
+
+# TODO extend. Inspired by https://aws.plainenglish.io/hands-on-ci-cd-for-spring-boot-applications-using-github-actions-and-aws-1cbc1e2c9d54
+
 name: CI/CD Pipeline
 on:
   #Manually trigger workflow runs
@@ -9,6 +12,8 @@ on:
       - main
       - develop
       - issue-*
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 jobs:
   #Test's job
   tests:
@@ -19,19 +24,29 @@ jobs:
     steps:
       #Check-out your repository under $GITHUB_WORKSPACE, so your workflow can access it
       - uses: actions/checkout@v1
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       #Set up JDK 11
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: '11'
-      #Set up Maven cache
-      - name: Cache Maven packages
-        #This action allows caching dependencies and build outputs to improve workflow execution time.
+          java-version: '13'
+      - name: Build with Gradle
+        run: gradle build
+      - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      #Run Tests
-      - name: Run Tests
-        run: mvn -B test
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Gradle packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew build sonarqube --info

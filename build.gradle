@@ -19,6 +19,7 @@ plugins {
     id 'net.ltgt.apt-idea' version '0.21'
     id 'org.springframework.boot' version '2.4.5'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id "org.sonarqube" version "3.3"
 }
 
 apply plugin: 'java'
@@ -49,6 +50,14 @@ def mapStructVersion = "1.3.0.Final"
 
 ext {
     mapstructVersion = "$mapStructVersion" as org.codehaus.groovy.runtime.GStringImpl
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "michmzr_gimmeback"
+        property "sonar.organization", "michmzr"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
 }
 
 dependencies {
