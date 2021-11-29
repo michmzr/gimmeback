@@ -22,7 +22,7 @@ class LoanServiceTest extends Specification {
     ItemMapper itemMapper = new ItemMapperImpl()
 
     @Subject
-    LoanService loanService
+    LoanApiService loanService
 
     def setup() {
     }

@@ -1,11 +1,11 @@
 package com.michmzr.gimmeback.loan;
 
+import com.michmzr.gimmeback.ApiService;
 import com.michmzr.gimmeback.item.Item;
 import com.michmzr.gimmeback.item.ItemMapper;
 import com.michmzr.gimmeback.security.SpringSecurityService;
 import com.michmzr.gimmeback.user.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
@@ -16,33 +16,34 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class LoanService {
+public class LoanApiService extends ApiService {
     private final LoanRepository loanRepository;
-    private final SpringSecurityService springSecurityService;
     private final LoanMapper loanMapper;
     private final ItemMapper itemMapper;
 
-    public LoanService(LoanRepository loanRepository, SpringSecurityService springSecurityService,
+    public LoanApiService(LoanRepository loanRepository, SpringSecurityService springSecurityService,
                        LoanMapper loanMapper, ItemMapper itemMapper) {
+        super(springSecurityService);
         this.loanRepository = loanRepository;
-        this.springSecurityService = springSecurityService;
         this.loanMapper = loanMapper;
         this.itemMapper = itemMapper;
     }
 
     Optional<Loan> find(Long id) {
-        return findByIdAndAuthor(id, springSecurityService.getCurrentUser());
+        return findByIdAndAuthor(id, getCurrentUser());
     }
 
     private Optional<Loan> findByIdAndAuthor(Long id, User user) {
         return loanRepository.findByIdAndAuthor(id, user);
     }
 
-    List<LoanDTO> findAll() {
-        return loanRepository.findAll()
-                .stream()
-                .map(loanMapper::toDTO)
-                .collect(Collectors.toList());
+    private List<Loan> findAll() {
+        return loanRepository.findAll();
+    }
+
+    List<Loan> findAllByAuthor() {
+        return loanRepository
+            .findAllByAuthor(getCurrentUser());
     }
 
     Loan save(LoanDTO loanDTO) {
@@ -54,7 +55,7 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
-    Boolean update(Long id, LoanDTO loanDTO) {//todo testy
+    Boolean update(Long id, LoanDTO loanDTO) {
         log.info("Update loan dto loan: {}", loanDTO);
 
         Optional<Loan> loanOpt = findByIdAndAuthor(id, springSecurityService.getCurrentUser());

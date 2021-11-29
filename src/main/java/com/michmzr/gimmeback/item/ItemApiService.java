@@ -1,5 +1,6 @@
 package com.michmzr.gimmeback.item;
 
+import com.michmzr.gimmeback.ApiService;
 import com.michmzr.gimmeback.security.SpringSecurityService;
 import com.michmzr.gimmeback.user.User;
 import java.util.List;
@@ -10,16 +11,16 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class ItemApiService {
-
-  private final SpringSecurityService springSecurityService;
+public class ItemApiService extends ApiService {
   private final ItemRepository itemRepository;
   private final ItemMapper itemMapper;
 
   @Autowired
-  public ItemApiService(SpringSecurityService springSecurityService, ItemRepository itemRepository,
+  public ItemApiService(
+      SpringSecurityService springSecurityService,
+      ItemRepository itemRepository,
       ItemMapper itemMapper) {
-    this.springSecurityService = springSecurityService;
+    super(springSecurityService);
     this.itemRepository = itemRepository;
     this.itemMapper = itemMapper;
   }
@@ -41,11 +42,7 @@ public class ItemApiService {
     return itemMapper.toDTO(item);
   }
 
-    private User getCurrentUser() {
-        return springSecurityService.getCurrentUser();
-    }
-
-    public ItemDTO update(Item item, ItemDTO itemDTO) {
+  public ItemDTO update(Item item, ItemDTO itemDTO) {
     log.debug("Updating item:{} with {}, user: {}", item, itemDTO, getCurrentUser());
 
     item.setName(itemDTO.getName());
